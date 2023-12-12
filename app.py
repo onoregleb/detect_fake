@@ -14,10 +14,10 @@ fake_audio_file = st.file_uploader("Загрузите аудиофайл", type
 if fake_audio_file is not None:
     temp_file_path = "temp_audio.wav"
 
-    st.audio(temp_file_path, format="audio/wav", start_time=0)
-
     with open(temp_file_path, 'wb') as f:
         f.write(fake_audio_file.read())
+
+    st.audio(temp_file_path, format="audio/wav", start_time=0)
 
     create_model(list_of_people)
 
