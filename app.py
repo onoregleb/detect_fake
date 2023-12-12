@@ -1,35 +1,34 @@
 import streamlit as st
 from main import create_model, check_access, prepare_audio
 import os
-# Загрузка фейкового аудиофайла
-fake_audio_file = st.file_uploader("Upload a fake audio file", type=["wav"])
+
+list_of_people = [
+    ('putin_orig.wav', True, 'Путин оригинал'),
+    ('putin_deep_fake.wav', False, 'Путин фейк')
+]
+
+st.title("Проверка доступа по аудио")
+
+fake_audio_file = st.file_uploader("Загрузите аудиофайл", type=["wav"])
 
 if fake_audio_file is not None:
-    # Сохранение загруженного файла
-    with open('putin_deep_fake.wav', 'wb') as f:
+    temp_file_path = "temp_audio.wav"
+
+    st.audio(temp_file_path, format="audio/wav", start_time=0)
+
+    with open(temp_file_path, 'wb') as f:
         f.write(fake_audio_file.read())
 
-    st.audio('putin_deep_fake.wav', format="audio/wav", start_time=0)
-
-    # Обучение модели
-    list_of_people = [
-        ('putin_orig.wav', True, 'Путин оригинал'),
-        ('putin_deep_fake.wav', False, 'Путин фейк')
-    ]
     create_model(list_of_people)
 
-    is_true_person = list_of_people[1]
+    access_granted = check_access(temp_file_path)
 
-    # Проверка доступа
-    access_granted = check_access('putin_deep_fake.wav')
-
-    if access_granted == is_true_person:
-        st.success("Верный результат! Доступ разрешен." if access_granted else "Верный результат! Доступ запрещен.")
+    if access_granted:
+        st.success("Доступ разрешен!")
     else:
-        st.error("Неверный результат! Доступ разрешен." if access_granted else "Неверный результат! Доступ запрещен.")
+        st.error("Доступ запрещен!")
 
-    # Удаление временного файла
-    if os.path.exists('putin_deep_fake.wav'):
-        os.remove('putin_deep_fake.wav')
+    if os.path.exists(temp_file_path):
+        os.remove(temp_file_path)
     else:
-        print("The file does not exist")
+        st.warning("Не удалось удалить временный файл")
